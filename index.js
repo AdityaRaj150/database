@@ -1,21 +1,19 @@
 import express from "express";
 import bodyParser from "body-parser";
-import pg from "pg";
+import dotenv from 'dotenv';
+dotenv.config();
 
 const db = new pg.Client({
-  user: "postgres",
-  host: "localhost",
-  database: "new-world",
-  password: "20216966",
-  port: 5432,
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
 });
 
 const app = express();
 const port = 3000;
 
-db.connect();
-
-let quiz = [];
+db.on('connect', () => {
+  console.log('Connected to the database');
+  let quiz = [];
 db.query("SELECT * FROM capitals_table", (err, res) => {
   if (err) {
     console.error("Error executing query", err.stack);
@@ -63,7 +61,10 @@ async function nextQuestion() {
   const randomCountry = quiz[Math.floor(Math.random() * quiz.length)];
   currentQuestion = randomCountry;
 }
-
-app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
+  app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+  });
 });
+
+
+
